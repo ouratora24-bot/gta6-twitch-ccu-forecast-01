@@ -39,10 +39,14 @@ persistence forecast misses both ways, so the forecaster conditions on the launc
   features: `log10(hour-1 viewers)` and `log(hour-1 / pre-release 7-day median
   viewers) / 3`, the second from the target's own history (in the final case,
   also from the GTA VI comparable's hourly series, which runs to 2026-11-17).
-- Quantiles are half empirical weighted quantiles, half a weighted-normal fit
-  (mean + z·sd), blended in log space — the empirical spread with tamed tails,
-  since only ~37 comparables exist and the effective sample in the big
-  hour-1 regime is ~6–10 games.
+- Quantiles are an adaptive blend of empirical weighted quantiles and a
+  weighted-normal fit (mean + z·sd), blended in log space — the empirical
+  weight is nEff / (nEff + 8), where nEff is the kernel's effective sample
+  size, so the fit leans on the normal when comparables are scarce and trusts
+  the empirical shape when they are plentiful. This keeps the honest spread
+  of the empirical distribution while taming its noisy tails, since only ~37
+  comparables exist and the effective sample in the big hour-1 regime is
+  ~6–10 games.
 - The five log-quantiles are smoothed across neighbouring hours (3-hour
   centred mean). If a case carries no usable comparables, it falls back to the
   house baseline (persistence, σ = 0.15 per √hour).
@@ -61,9 +65,9 @@ kit (each treated as a case, forecast from the other 36):
 
 | | this entry | house starter |
 |---|---|---|
-| All 37 launches | **0.388** | 0.930 |
-| Big hour-1 launches (≥ 40k, the GTA VI regime) | **0.241** | 0.295 |
-| Small hour-1 launches (< 10k) | **0.787** | 2.730 |
+| All 37 launches | **0.385** | 0.930 |
+| Big hour-1 launches (≥ 40k, the GTA VI regime) | **0.240** | 0.295 |
+| Small hour-1 launches (< 10k) | **0.780** | 2.730 |
 
 For reference, the house baseline scores ~0.387 on the four practice cases
 (p00–p03), whose hour-1 prints are all large. Outputs on p00–p03 were checked:

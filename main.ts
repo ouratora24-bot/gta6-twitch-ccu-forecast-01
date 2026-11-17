@@ -19,11 +19,15 @@
 //     median viewers) / 3, the second from the target's own history (and, in the final
 //     case, from the GTA VI comparable's hourly series, which runs to 2026-11-17).
 //   - Gaussian kernel weights with bandwidth 0.5 in each feature.
-//   - quantiles at 0.05/0.25/0.5/0.75/0.95: half the empirical weighted quantiles, half
-//     a weighted-normal fit (mean + z_tau * sd), blended in log space. The blend keeps
-//     the honest spread of the empirical distribution while taming its noisy tails,
-//     which matter because only ~37 comparables exist and the effective sample in the
-//     big hour-1 regime is ~6-10 games.
+//   - quantiles at 0.05/0.25/0.5/0.75/0.95: an adaptive blend of the empirical
+//     weighted quantiles and a weighted-normal fit (mean + z_tau * sd), blended
+//     in log space. The empirical weight is nEff / (nEff + 8), where nEff is the
+//     kernel's effective sample size: with few effective comparables the
+//     empirical quantiles are noisy, so the fit leans on the normal; with many,
+//     it trusts the empirical shape. This keeps the honest spread of the
+//     empirical distribution while taming its noisy tails, which matter because
+//     only ~37 comparables exist and the effective sample in the big hour-1
+//     regime is ~6-10 games.
 //   - the five log-quantiles are smoothed across neighbouring hours (3-hour centred
 //     mean), so the curve cannot jump hour to hour on sampling noise.
 // Fallback: if the case carries no usable comparables, the house baseline (persistence
@@ -34,8 +38,8 @@
 // {"hours":[{"hour":h,"q":[q05,q25,q50,q75,q95]}, ...]} for hours 2..24.
 //
 // Validation (leave-one-out over the 37 comparable launches in the kit, scored with
-// the rules' pinball loss on the log scale): this model 0.389 overall vs 0.930 for the
-// house starter; on big hour-1 launches (>= 40k viewers, the GTA VI regime) 0.241 vs
+// the rules' pinball loss on the log scale): this model 0.385 overall vs 0.930 for the
+// house starter; on big hour-1 launches (>= 40k viewers, the GTA VI regime) 0.240 vs
 // 0.295 for the starter. grade-local does not exist for this competition (the CLI says
 // it is graded on the server only), so these are computed with the same formula.
 
@@ -48,7 +52,6 @@ const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 const LEVELS = [0.05, 0.25, 0.5, 0.75, 0.95];
 const Z = [-1.645, -0.674, 0, 0.674, 1.645];
 const BANDWIDTH = 0.5;
-const BLEND = 0.5; // weight on the empirical quantiles; 1 - BLEND on the normal fit.
 const STARTER_SIGMA = 0.15;
 
 interface HourlyRow { from: string; viewers: number; channels?: number | null; reads?: number }
@@ -180,7 +183,12 @@ function hourLogQuantiles(train: TrainGame[], x1: number, x2: number, h: number)
   const mu = pairs.reduce((s, [v, w]) => s + v * w, 0) / total;
   const variance = pairs.reduce((s, [v, w]) => s + w * (v - mu) ** 2, 0) / total;
   const sd = Math.sqrt(Math.max(variance, 1e-6));
-  return LEVELS.map((_, i) => BLEND * emp[i] + (1 - BLEND) * (mu + Z[i] * sd));
+  // Adaptive blend: with few effective comparables the empirical quantiles are
+  // noisy, so lean on the normal fit; with many, trust the empirical shape.
+  const sumSq = pairs.reduce((s, [, w]) => s + w * w, 0);
+  const nEff = (total * total) / Math.max(sumSq, 1e-12);
+  const blendEmp = nEff / (nEff + 8);
+  return LEVELS.map((_, i) => blendEmp * emp[i] + (1 - blendEmp) * (mu + Z[i] * sd));
 }
 
 function starterQuantiles(p1: number, h: number): number[] {
