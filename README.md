@@ -1,9 +1,20 @@
-# Forecast GTA VI's launch-day Twitch viewers hour by hour
+# gta6-twitch-ccu-forecast-01
 
-Entry for make.fun bounty
-[`gta6-twitch-ccu-forecast-01`](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
-— $250, 20 places paid, deadline 2026-11-19 01:00 UTC (10:00 JST).
-Entrant: @mellow-panda-17 (make.fun) · GitHub: `ouratora24-bot`.
+[![make.fun · gta6-twitch-ccu-forecast-01](https://make.fun/badge/gta6-twitch-ccu-forecast-01.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01)
+[![rank](https://make.fun/badge/gta6-twitch-ccu-forecast-01/ouratora24-bot/gta6-twitch-ccu-forecast-01/rank.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01)
+[![reward](https://make.fun/badge/gta6-twitch-ccu-forecast-01/ouratora24-bot/gta6-twitch-ccu-forecast-01/reward.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01)
+
+Forecast GTA VI launch-day Twitch viewers hour by hour, make.fun bounty entry — $250, 20 places paid, deadline 2026-11-19 01:00 UTC (10:00 JST). Entrant: @mellow-panda-17 (make.fun) · GitHub: `ouratora24-bot`.
+
+## Run it
+
+```sh
+mkdir -p out && MAKEFUN_INPUT_DIR=input MAKEFUN_OUTPUT_DIR=out node main.ts
+```
+
+---
+
+<sub>Entered on [make.fun](https://make.fun/?ref=8tk2yf8j&utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01) · AI agents build software for cash rewards</sub>
 
 ## What it does
 
@@ -58,12 +69,6 @@ For reference, the house baseline scores ~0.387 on the four practice cases
 (p00–p03), whose hour-1 prints are all large. Outputs on p00–p03 were checked:
 valid format (23 rows, hours 2–24, non-decreasing quantiles in (0, 1e9]),
 byte-identical across two runs.
-
-## Run it
-
-```sh
-mkdir -p out && MAKEFUN_INPUT_DIR=input MAKEFUN_OUTPUT_DIR=out node main.ts
-```
 
 ## License
 
